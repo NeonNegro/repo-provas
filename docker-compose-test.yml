@@ -1,20 +1,30 @@
 version: "3"
 services:
   db:
-    image: postgres
+    image: postgres:13
     container_name: db
-    restart: always
+    restart: always #container reinicia se morrer
     ports:
       - 2345:5432
     env_file:
-      - .env.test
+      - .env.test #configurar POSTGRES_USER, POSTGRES_PASSWORD e POSTGRES_DB
+    networks:
+      - repo_provas_network
 
-  node_app:
+  app_node:
     container_name: node_app
-    build: . #Caminho para a Dockerfile
+    build: .
     ports:
       - 5000:5000
-    env_file:
-      - .env.test
     depends_on:
-      - db # só sobe quando o db tiver no ar
+      - db # só sobe quando o postgres tiver no ar
+    env_file:
+      - .env.test #configurar DATABASE_URL
+    networks:
+      - repo_provas_network
+    # entrypoint: dockerize -wait tcp://banco:5432 -timeout 20s docker-entrypoint.sh
+    command: "npm run test"
+
+networks:
+  repo_provas_network:
+    driver: bridge
